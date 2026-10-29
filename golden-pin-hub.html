@@ -1,0 +1,471 @@
+<title>Golden Pin Hub</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,600;0,700;1,700&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: phone-width app column. Hub / Fixtures / Scores / Stats / Bonus tabs, fixed bottom bar, bowler bottom sheet. Deliberately dark, single theme. */
+:root {
+  --bg: #0a1220;
+  --bg2: #101d33;
+  --card: #12213a;
+  --card2: #0c182b;
+  --line: #27425f;
+  --ink: #e9f1fa;
+  --muted: #8fa6bf;
+  --cyan: #62d4ff;
+  --pink: #ff7a93;
+  --gold: #ffc861;
+  --green: #58d99b;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: radial-gradient(1200px 500px at 50% -10%, #17325a 0%, var(--bg) 60%) no-repeat, var(--bg);
+  background-color: var(--bg);
+  color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45;
+  padding-block: 20px 110px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  min-height: 100%;
+}
+.app { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+button { font: inherit; color: inherit; }
+.disp { font-family: var(--font-display); font-style: italic; font-weight: 700; letter-spacing: .01em; }
+.cap { color: var(--muted); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; font-weight: 600; }
+
+/* header */
+.head { display: flex; align-items: center; gap: 14px; }
+.logo { width: 64px; height: 64px; flex: none; }
+.head h1 { margin: 0; font-size: clamp(34px, 9vw, 46px); line-height: 1; text-transform: uppercase; }
+.head .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; min-width: 0; }
+.badge { display: inline-flex; align-items: center; gap: 6px; border: 1px solid #ff7a93aa; background: #3a1a35; color: #ffc4d0; border-radius: 999px; padding: 4px 12px; font-size: 12px; letter-spacing: .12em; font-weight: 600; text-transform: uppercase; }
+.badge svg { width: 14px; height: 14px; }
+.league { color: var(--muted); font-size: 14px; }
+
+/* cards */
+.card { background: linear-gradient(180deg, var(--card) 0%, var(--card2) 100%); border: 1px solid var(--line); border-radius: 22px; padding: 18px; box-shadow: 0 10px 30px #00000055; min-width: 0; }
+.card.glow { border-color: #3d7fa6; box-shadow: 0 0 0 1px #62d4ff33, 0 0 28px #62d4ff22, 0 10px 30px #00000055; }
+.card h2 { margin: 0 0 12px; font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); font-weight: 600; font-family: var(--font-body); }
+
+/* timer */
+.timer { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.tile { background: #060d18; border: 1px solid var(--line); border-radius: 18px; padding: 12px 4px 10px; text-align: center; box-shadow: inset 0 0 18px #62d4ff12; }
+.tile b { display: block; font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: clamp(36px, 11vw, 54px); line-height: 1; color: #9fdcff; font-variant-numeric: tabular-nums; text-shadow: 0 0 16px #62d4ff66; }
+.tile span { display: block; margin-top: 4px; font-size: 11px; letter-spacing: .2em; color: var(--muted); font-weight: 600; }
+.when { margin-top: 12px; color: var(--muted); font-size: 14px; }
+.when b { color: var(--ink); font-weight: 600; }
+
+/* notice */
+.notice { display: flex; gap: 14px; }
+.notice .ico { width: 48px; height: 48px; flex: none; border-radius: 14px; background: #123a52; border: 1px solid #3d7fa6; display: grid; place-items: center; }
+.notice .ico svg { width: 24px; height: 24px; }
+.notice .tag { color: var(--cyan); font-size: 12px; letter-spacing: .18em; font-weight: 600; text-transform: uppercase; }
+.notice p { margin: 4px 0 0; font-size: 17px; line-height: 1.4; font-weight: 500; }
+
+/* match card */
+.chip { display: inline-block; border: 1px solid var(--line); border-radius: 999px; padding: 4px 14px; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: #b9d3ee; font-weight: 600; }
+.vsrow { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); align-items: center; gap: 10px; margin: 14px 0; }
+.vsrow .us { text-align: left; } .vsrow .them { text-align: right; }
+.vsrow small { display: block; font-size: 12px; letter-spacing: .18em; font-weight: 600; text-transform: uppercase; }
+.vsrow .us small { color: var(--cyan); } .vsrow .them small { color: var(--pink); }
+.vsrow .nm { font-size: clamp(22px, 6.4vw, 30px); line-height: 1.05; text-transform: uppercase; overflow-wrap: anywhere; }
+.vsrow .vs { width: 44px; height: 44px; border-radius: 50%; background: #060d18; border: 1px solid var(--line); display: grid; place-items: center; font-weight: 700; font-size: 13px; color: var(--muted); }
+.result { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; color: var(--muted); font-size: 14px; }
+.result b { color: var(--ink); font-family: var(--font-display); font-style: italic; font-size: 26px; }
+.who { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.pl { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: #0a1527; border: 1px solid #1c3250; border-radius: 16px; padding: 10px 12px; cursor: pointer; min-width: 0; }
+.pl:hover { border-color: #3d7fa6; }
+.pl:focus-visible, .tab:focus-visible, .seg button:focus-visible, .x:focus-visible, .fx:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+.av { width: 44px; height: 44px; flex: none; border-radius: 50%; border: 1px solid #4a5f80; background: #1a2a45; display: grid; place-items: center; font-weight: 700; font-size: 14px; color: #c9c3ff; }
+.pl .t { min-width: 0; flex: 1; }
+.pl .t b { display: block; font-size: 17px; }
+.pl .t span { display: block; font-size: 13px; color: var(--muted); }
+.pl .r { text-align: right; font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: 28px; line-height: 1; font-variant-numeric: tabular-nums; }
+.pl .r small { display: block; font-family: var(--font-body); font-style: normal; font-weight: 600; font-size: 11px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
+.more { display: block; margin-top: 12px; text-align: center; color: var(--cyan); font-weight: 600; text-decoration: none; font-size: 14px; }
+
+/* standing mini cards */
+.stand { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.stand div { background: #0a1527; border: 1px solid #1c3250; border-radius: 16px; padding: 12px 10px; text-align: center; }
+.stand b { display: block; font-family: var(--font-display); font-style: italic; font-size: 34px; line-height: 1; }
+.stand b small { font-size: 15px; color: var(--muted); font-style: normal; }
+.stand span { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); font-weight: 600; margin-top: 4px; }
+.stand em { display: block; font-style: normal; font-size: 12px; color: var(--green); margin-top: 2px; }
+
+/* segmented */
+.seg { display: inline-flex; background: #060d18; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button { border: 0; background: none; padding: 7px 16px; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 13px; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: #1d4a6a; color: #fff; }
+
+/* games */
+.games { display: flex; flex-direction: column; gap: 12px; }
+.game { display: grid; grid-template-columns: 54px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.game .gn { font-weight: 600; color: var(--muted); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+.game .track { height: 24px; background: #0a1527; border-radius: 12px; overflow: hidden; position: relative; }
+.game .fill { height: 100%; border-radius: 12px; background: linear-gradient(90deg, #2a79a8, var(--cyan)); display: flex; align-items: center; justify-content: flex-end; padding-right: 10px; font-weight: 700; font-size: 13px; color: #04121f; min-width: 52px; }
+.game .opp { position: absolute; top: 3px; bottom: 3px; width: 2px; background: var(--pink); border-radius: 1px; }
+.pt { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.pt.won { background: #12392b; color: var(--green); } .pt.lost { background: #3d1a27; color: var(--pink); }
+.legend { display: flex; gap: 16px; font-size: 12px; color: var(--muted); margin-top: 12px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; background: var(--cyan); }
+.legend i.o { width: 2px; height: 12px; background: var(--pink); border-radius: 1px; vertical-align: -2px; }
+.cells { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.cell { min-width: 44px; text-align: center; padding: 3px 7px; border-radius: 8px; font-weight: 600; font-size: 13px; background: #0f2036; font-variant-numeric: tabular-nums; }
+.cell.low { background: #3d1a27; color: var(--pink); } .cell.high { background: #43330f; color: var(--gold); } .cell.top { background: #12392b; color: var(--green); }
+
+/* fixtures */
+.fxl { display: flex; flex-direction: column; gap: 10px; }
+.fx { width: 100%; text-align: left; background: #0a1527; border: 1px solid #1c3250; border-radius: 16px; padding: 12px 14px; cursor: pointer; display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; align-items: center; }
+.fx.next { border-color: #3d7fa6; box-shadow: 0 0 18px #62d4ff22; }
+.fx .wk { font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: 26px; line-height: 1; text-align: center; color: #9fdcff; }
+.fx .wk small { display: block; font-family: var(--font-body); font-style: normal; font-size: 10px; letter-spacing: .14em; color: var(--muted); }
+.fx b { display: block; font-size: 16px; overflow-wrap: anywhere; }
+.fx span { color: var(--muted); font-size: 13px; }
+.fx .ln { font-size: 12px; font-weight: 600; background: #123a52; color: #b6e6ff; padding: 4px 10px; border-radius: 999px; white-space: nowrap; }
+.fx .det { grid-column: 1 / -1; font-size: 13px; color: var(--muted); padding-top: 8px; border-top: 1px dashed #27425f; }
+.master { text-align: center; color: var(--gold); font-weight: 600; padding: 12px; border: 1px dashed #6b5521; border-radius: 16px; }
+
+/* stats */
+.spot { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.sp { text-align: left; background: #0a1527; border: 1px solid #1c3250; border-radius: 18px; padding: 14px; cursor: pointer; min-width: 0; }
+.sp:hover { border-color: #3d7fa6; }
+.sp .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.sp b { display: block; font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: 44px; line-height: 1.05; color: var(--gold); }
+.sp .n { font-weight: 600; overflow-wrap: anywhere; }
+.sp small { display: block; color: var(--muted); font-size: 12px; }
+.squad { display: flex; flex-direction: column; gap: 8px; }
+.sq { width: 100%; text-align: left; display: grid; grid-template-columns: 40px minmax(0, 1fr) 54px; gap: 12px; align-items: center; background: #0a1527; border: 1px solid #1c3250; border-radius: 14px; padding: 8px 12px; cursor: pointer; }
+.sq .av { width: 40px; height: 40px; font-size: 13px; }
+.sq b { font-size: 15px; display: block; }
+.sq .bar { height: 6px; border-radius: 3px; background: #14283f; margin-top: 6px; overflow: hidden; }
+.sq .bar i { display: block; height: 100%; background: linear-gradient(90deg, #2a79a8, var(--cyan)); border-radius: 3px; }
+.sq .v { text-align: right; font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: 26px; font-variant-numeric: tabular-nums; }
+.sq small { color: var(--muted); font-size: 12px; }
+.prov { color: var(--gold); }
+
+/* bonus */
+.bn { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #1c3250; }
+.bn:last-of-type { border-bottom: 0; }
+.bn b { font-size: 16px; }
+.amt { font-family: var(--font-display); font-style: italic; font-weight: 700; font-size: 28px; }
+.neg { color: var(--pink); } .pos { color: var(--green); } .zero { color: var(--muted); }
+.rules { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.rules span { font-size: 12px; padding: 4px 10px; border-radius: 999px; font-weight: 600; }
+.note { color: var(--muted); font-size: 12px; margin-top: 10px; }
+
+/* tab bar */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; justify-content: center; padding: 8px max(12px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); pointer-events: none; }
+.tabs { pointer-events: auto; width: min(560px, 100%); display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; background: #0b1627f0; border: 1px solid var(--line); border-radius: 26px; padding: 6px; box-shadow: 0 10px 30px #000a; backdrop-filter: blur(10px); }
+.tab { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 2px; border-radius: 20px; text-decoration: none; color: var(--muted); font-size: 12px; font-weight: 600; }
+.tab svg { width: 24px; height: 24px; }
+.tab[aria-current="page"] { background: #17385a; color: #aee4ff; }
+
+/* sheet */
+.sheetwrap { position: fixed; inset: 0; z-index: 40; display: flex; align-items: flex-end; justify-content: center; background: #02060cb3; }
+.sheetwrap[hidden] { display: none; }
+.sheet { width: min(560px, 100%); max-height: 88vh; overflow-y: auto; background: linear-gradient(180deg, #14263f, #0b1627); border: 1px solid #3d7fa6; border-bottom: 0; border-radius: 26px 26px 0 0; padding: 18px 18px calc(24px + env(safe-area-inset-bottom, 0px)); animation: up .22s ease-out; }
+@keyframes up { from { transform: translateY(24px); opacity: .6; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } html { scroll-behavior: auto; } }
+.sh { display: flex; align-items: center; gap: 14px; }
+.sh .av { width: 58px; height: 58px; font-size: 18px; }
+.sh h3 { margin: 0; font-size: 28px; line-height: 1.05; }
+.sh .sub { color: var(--muted); font-size: 13px; }
+.x { margin-left: auto; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #0a1527; cursor: pointer; font-size: 20px; line-height: 1; }
+.kv { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 16px 0; }
+.kv div { background: #0a1527; border: 1px solid #1c3250; border-radius: 14px; padding: 10px; text-align: center; }
+.kv b { display: block; font-family: var(--font-display); font-style: italic; font-size: 28px; line-height: 1; }
+.kv span { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.cols { display: flex; align-items: flex-end; gap: 10px; height: 120px; margin: 8px 0 4px; }
+.cols div { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; height: 100%; }
+.cols i { display: block; width: 100%; max-width: 54px; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, var(--cyan), #2a79a8); }
+.cols i.low { background: linear-gradient(180deg, var(--pink), #8a3350); } .cols i.high { background: linear-gradient(180deg, var(--gold), #8a6a22); } .cols i.top { background: linear-gradient(180deg, var(--green), #1f7a52); }
+.cols b { font-size: 13px; font-variant-numeric: tabular-nums; }
+.cols span { font-size: 11px; color: var(--muted); }
+footer { color: var(--muted); font-size: 12px; text-align: center; padding: 6px 8px 0; }
+</style>
+
+<div class="app">
+  <header class="head">
+    <svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Golden Pin badge">
+      <defs>
+        <linearGradient id="lg1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd98a"/><stop offset="1" stop-color="#c98a22"/></linearGradient>
+        <linearGradient id="lg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3f66"/><stop offset="1" stop-color="#0a1a30"/></linearGradient>
+      </defs>
+      <circle cx="32" cy="32" r="30" fill="url(#lg2)" stroke="url(#lg1)" stroke-width="3"/>
+      <path d="M32 10c-3.2 0-5.4 2.4-5.4 5.4 0 2.2 1.1 3.7 2.2 5 1.3 1.6 1.3 3 .5 5.100-1.500 4.200-4.800 7.900-4.800 12.900 0 5.500 3.400 9.500 7.500 9.500s7.500-4 7.500-9.500c0-5-3.300-8.700-4.800-12.900-.8-2.100-.8-3.500.5-5.100 1.100-1.300 2.200-2.800 2.200-5 0-3-2.200-5.400-5.400-5.400z" fill="url(#lg1)"/>
+      <rect x="28" y="47" width="8" height="5" rx="2" fill="url(#lg1)"/>
+      <path d="M29 20.500h6M28.300 24h7.400" stroke="#0a1a30" stroke-width="1.800" stroke-linecap="round"/>
+    </svg>
+    <div style="min-width:0">
+      <h1 class="disp">Golden Pin</h1>
+      <div class="row">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 8l4.500 4L12 5l4.500 7L21 8l-2 11H5z"/></svg>Captain Jamal</span>
+        <span class="league">Wednesday Trios League · Team 13</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- HUB -->
+  <section id="view-hub" class="view" aria-label="Hub">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div>
+        <div class="cap" style="margin-bottom:10px">Next match in</div>
+        <div class="timer" id="timer" aria-live="off">
+          <div class="tile"><b id="t-d">00</b><span>DAYS</span></div>
+          <div class="tile"><b id="t-h">00</b><span>HRS</span></div>
+          <div class="tile"><b id="t-m">00</b><span>MIN</span></div>
+          <div class="tile"><b id="t-s">00</b><span>SEC</span></div>
+        </div>
+        <div class="when" id="when"></div>
+      </div>
+
+      <div class="card glow notice">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="#9fdcff" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17 9c1.500 1 1.500 5 0 6"/></svg></div>
+        <div><div class="tag">Match notice · from the league schedule</div><p id="notice"></p></div>
+      </div>
+
+      <div class="card" id="lastmatch"></div>
+
+      <div class="card"><h2>Season standing</h2><div class="stand" id="stand"></div></div>
+    </div>
+  </section>
+
+  <!-- FIXTURES -->
+  <section id="view-fixtures" class="view" aria-label="Fixtures" hidden>
+    <div class="card"><h2>Upcoming fixtures · Round 2</h2><div class="fxl" id="fxl"></div><div class="master" style="margin-top:12px">League Master Event · Wed 20 Jan 2027</div></div>
+  </section>
+
+  <!-- SCORES -->
+  <section id="view-scores" class="view" aria-label="Scores" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+          <span class="chip">Week 23 · 28 Oct</span>
+          <div class="seg" id="mode" role="group" aria-label="Scoring basis"><button data-mode="scratch" aria-pressed="true" id="m-scratch">Scratch</button><button data-mode="hcp" aria-pressed="false" id="m-hcp">With handicap</button></div>
+        </div>
+        <div style="margin:16px 0 4px"><div class="cap" id="sc-label">Team pinfall</div><div class="disp" id="sc-total" style="font-size:84px;line-height:.95">0</div><div class="when" id="sc-vs" style="margin-top:2px"></div></div>
+      </div>
+      <div class="card"><h2>Game by game</h2><div class="games" id="games"></div>
+        <div class="legend"><span><i></i>Golden Pin</span><span><i class="o"></i>Pin Warriors</span></div>
+        <div class="note">Match points go on handicap scores: one per game, one for the series, plus bowler points.</div></div>
+      <div class="card"><h2>Bowlers · tap for detail</h2><div class="who" id="sc-who"></div></div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <section id="view-stats" class="view" aria-label="Stats" hidden>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card"><h2>Spotlight · tap a card</h2><div class="spot" id="spot"></div></div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+          <h2 style="margin:0">Squad averages</h2>
+          <div class="seg" id="sortseg" role="group" aria-label="Sort squad"><button data-sort="avg" aria-pressed="true" id="s-avg">Average</button><button data-sort="g" aria-pressed="false" id="s-g">Games</button><button data-sort="n" aria-pressed="false" id="s-n">Name</button></div>
+        </div>
+        <div class="squad" id="squad"></div>
+        <div class="note">League sheet averages as of Week 23. Under 16 games is provisional and not eligible for individual awards.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BONUS -->
+  <section id="view-bonus" class="view" aria-label="Bonus" hidden>
+    <div class="card">
+      <h2>Reward and penalty · Week 23</h2>
+      <div id="bonus"></div>
+      <div class="rules" style="margin-top:14px"><span style="background:#3d1a27;color:var(--pink)">Under 170: −$2</span><span style="background:#43330f;color:var(--gold)">Over 210: +$2</span><span style="background:#12392b;color:var(--green)">Over 230: +$4</span></div>
+      <div class="note">The team's own rule, applied to scratch games.</div>
+    </div>
+  </section>
+
+  <footer>Source: 11th SB Wednesday Trios League, Week 23 results, 28 Oct 2026, and the league schedule. Golden Pin data only.</footer>
+</div>
+
+<nav class="dock" aria-label="Sections"><div class="tabs">
+  <a class="tab" href="#hub" data-v="hub" id="tab-hub"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linejoin="round"><rect x="3.500" y="3.500" width="7" height="7" rx="2"/><rect x="13.500" y="3.500" width="7" height="7" rx="2"/><rect x="3.500" y="13.500" width="7" height="7" rx="2"/><rect x="13.500" y="13.500" width="7" height="7" rx="2"/></svg>Hub</a>
+  <a class="tab" href="#fixtures" data-v="fixtures" id="tab-fixtures"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>Fixtures</a>
+  <a class="tab" href="#scores" data-v="scores" id="tab-scores"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round"><path d="M9 7h11M9 12h11M9 17h11M4.500 7h.01M4.500 12h.01M4.500 17h.01"/></svg>Scores</a>
+  <a class="tab" href="#stats" data-v="stats" id="tab-stats"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Stats</a>
+  <a class="tab" href="#bonus" data-v="bonus" id="tab-bonus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.500"/><path d="M12 7.500v9M9.500 10c0-1 1-1.600 2.500-1.600s2.500.7 2.500 1.700-1 1.400-2.500 1.800-2.500.8-2.500 1.800 1 1.700 2.500 1.700 2.500-.6 2.500-1.600"/></svg>Bonus</a>
+</div></nav>
+
+<div class="sheetwrap" id="sheetwrap" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-name" id="sheet"></div>
+</div>
+
+<script>
+var NEXT = new Date("2026-11-04T20:00:00+08:00").getTime();
+var DAYS = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"], MONS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+var ROSTER = [
+  { n: "Jacob", tpf: 3983, g: 20, avg: 199, hcp: 0 }, { n: "Aide", tpf: 6616, g: 36, avg: 183, hcp: 0 },
+  { n: "Syaukat", tpf: 833, g: 4, avg: 208, hcp: 0 }, { n: "Mohd Amin", tpf: 5949, g: 32, avg: 185, hcp: 0 },
+  { n: "Aliman", tpf: 3859, g: 20, avg: 192, hcp: 0 }, { n: "Jamal", tpf: 4669, g: 24, avg: 194, hcp: 0 },
+  { n: "Ridwan", tpf: 1581, g: 8, avg: 197, hcp: 0 }, { n: "Ainur", tpf: 7561, g: 40, avg: 189, hcp: 0 },
+  { n: "Shah", tpf: 3530, g: 20, avg: 176, hcp: 2 }, { n: "Othman", tpf: 6304, g: 32, avg: 197, hcp: 0 },
+  { n: "Anthony Tan", tpf: 4237, g: 24, avg: 176, hcp: 2 }, { n: "Kamsan", tpf: 2831, g: 16, avg: 176, hcp: 2 }
+];
+var WEEK = {
+  s: { "Anthony Tan": [170,165,149,181], "Aide": [166,216,183,158], "Othman": [171,192,201,231] },
+  h: { "Anthony Tan": [171,166,150,182], "Aide": [166,216,183,158], "Othman": [171,192,201,231] },
+  pts: { "Anthony Tan": 4, "Aide": 2, "Othman": 3 }, hcp: { "Anthony Tan": 1, "Aide": 0, "Othman": 0 }
+};
+var OPP = { name: "Pin Warriors", no: 12, s: [497,570,484,563], h: [516,589,503,582], pts: 10.0 };
+var STAND = [
+  { t: "Overall", pos: 15, won: 167.0, prev: 157.0 },
+  { t: "Round 2", pos: 15, won: 45.5, prev: 35.5 },
+  { t: "Round 1", pos: 15, won: 121.5, prev: null }
+];
+var FIX = [
+  [24,"2026-11-04","Pinfalls 3.0",10,4,0], [25,"2026-11-11","ViperX",7,1,1], [26,"2026-11-18","TKS",1,5,1],
+  [27,"2026-11-25","1 Famili",6,3,1], [28,"2026-12-02","CJ7",4,4,1], [29,"2026-12-09","Queen of Hearts",18,1,0],
+  [30,"2026-12-16","OG X",3,8,0], [31,"2026-12-23","Lucky Strike Kings",2,6,1], [32,"2026-12-30","Syntech Unity",5,7,1],
+  [33,"2027-01-06","Pinfinity",9,0,0], [34,"2027-01-13","Bowl*A*Thon",11,2,0]
+].map(function (f) {
+  var base = 7 + 2 * f[4];
+  return { wk: f[0], date: f[1], opp: f[2], no: f[3], lanes: base + "–" + (base + 1), lane: base + f[5] };
+});
+var mode = "scratch", sortKey = "avg";
+
+function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+function pay(g) { return g < 170 ? -2 : g > 230 ? 4 : g > 210 ? 2 : 0; }
+function cls(g) { return g < 170 ? "low" : g > 230 ? "top" : g > 210 ? "high" : ""; }
+function money(n) { return (n < 0 ? "−" : n > 0 ? "+" : "") + "$" + Math.abs(n); }
+function ord(n) { var s = ["th","st","nd","rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+function ini(n) { var p = n.split(" "); return (p.length > 1 ? p[0][0] + p[1][0] : n.slice(0, 2)).toUpperCase(); }
+function dstr(iso) { var d = new Date(iso + "T12:00:00+08:00"); return DAYS[d.getUTCDay() === undefined ? 0 : new Date(iso + "T12:00:00Z").getUTCDay()] + " " + new Date(iso + "T12:00:00Z").getUTCDate() + " " + MONS[new Date(iso + "T12:00:00Z").getUTCMonth()]; }
+function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;"); }
+function find(n) { return ROSTER.filter(function (r) { return r.n === n; })[0]; }
+var SQUAD_AVG = sum(ROSTER.map(function (r) { return r.tpf; })) / sum(ROSTER.map(function (r) { return r.g; }));
+var ELIG = ROSTER.filter(function (r) { return r.g >= 16; });
+var RANKED = ROSTER.slice().sort(function (a, b) { return b.avg - a.avg || b.g - a.g; });
+function week(key) { return [0,1,2,3].map(function (i) { return sum(Object.keys(WEEK[key]).map(function (n) { return WEEK[key][n][i]; })); }); }
+
+/* timer */
+function tick() {
+  var d = NEXT - Date.now(), over = d <= 0; if (over) d = 0;
+  var v = [Math.floor(d / 864e5), Math.floor(d / 36e5) % 24, Math.floor(d / 6e4) % 60, Math.floor(d / 1e3) % 60];
+  ["d","h","m","s"].forEach(function (k, i) { document.getElementById("t-" + k).textContent = String(v[i]).padStart(2, "0"); });
+  document.getElementById("when").innerHTML = over ? "<b>Match night.</b> Good luck, Golden Pin." : "<b>Week 24 · " + dstr(FIX[0].date) + " · 8:00pm sharp</b> · Superbowl Tampines";
+}
+
+/* hub */
+function renderHub() {
+  var f = FIX[0];
+  document.getElementById("notice").textContent = "Wednesday 4 Nov, 8:00pm sharp at Superbowl Tampines. Golden Pin bowls on lane " + f.lane + " (lanes " + f.lanes + ") against " + f.opp + " (#" + f.no + ").";
+  var sc = week("s"), h = week("h"), oh = OPP.h;
+  var team = sum(Object.keys(WEEK.pts).map(function (n) { return WEEK.pts[n]; })) + h.filter(function (g, i) { return g > oh[i]; }).length + (sum(h) > sum(oh) ? 1 : 0);
+  var res = team === OPP.pts ? "Draw" : team > OPP.pts ? "Win" : "Loss";
+  document.getElementById("lastmatch").innerHTML =
+    '<span class="chip">Week 23 · last match</span>' +
+    '<div class="vsrow"><div class="us"><small>Us · #13</small><div class="nm disp">Golden Pin</div></div><div class="vs">VS</div><div class="them"><small>Them · #' + OPP.no + '</small><div class="nm disp">' + OPP.name + '</div></div></div>' +
+    '<div class="result"><span>Lane 13 · 28 Oct · 8:00pm</span><span>' + res + ' <b>' + team.toFixed(1) + ' – ' + OPP.pts.toFixed(1) + '</b></span></div>' +
+    '<div class="who">' + Object.keys(WEEK.s).map(function (n) { return plHtml(n); }).join("") + '</div>' +
+    '<a class="more" href="#scores" id="to-scores">Full scores →</a>';
+  document.getElementById("stand").innerHTML = STAND.map(function (s) {
+    return '<div><b>' + ord(s.pos) + ' <small>/18</small></b><span>' + s.t + '</span><em>' + s.won.toFixed(1) + ' pts' + (s.prev !== null ? ' · +' + (s.won - s.prev).toFixed(1) : '') + '</em></div>';
+  }).join("");
+}
+function plHtml(n) {
+  var r = find(n), ser = sum(WEEK.s[n]);
+  return '<button class="pl" data-p="' + esc(n) + '"><span class="av">' + ini(n) + '</span><span class="t"><b>' + esc(n) + '</b><span>This week avg ' + (ser / 4).toFixed(1) + ' · League avg ' + r.avg + ' · Hcp ' + WEEK.hcp[n] + '</span></span><span class="r">' + ser + '<small>Series</small></span></button>';
+}
+
+/* fixtures */
+function renderFix() {
+  document.getElementById("fxl").innerHTML = FIX.map(function (f, i) {
+    var days = Math.round((new Date(f.date + "T20:00:00+08:00").getTime() - Date.now()) / 864e5);
+    return '<button class="fx' + (i === 0 ? ' next' : '') + '" data-f="' + i + '"><div class="wk"><small>WEEK</small>' + f.wk + '</div><div><b>vs ' + f.opp + '</b><span>' + dstr(f.date) + ' · 8:00pm' + (i === 0 ? ' · next' : '') + '</span></div><div class="ln">Lane ' + f.lane + '</div><div class="det" hidden>Team #' + f.no + ' · lanes ' + f.lanes + ' · Golden Pin starts on lane ' + f.lane + ' · about ' + Math.max(days, 0) + ' days away.</div></button>';
+  }).join("");
+}
+
+/* scores */
+function renderScores() {
+  var key = mode === "scratch" ? "s" : "h", g = week(key), og = OPP[key], oh = OPP.h, hh = week("h");
+  document.getElementById("sc-label").textContent = mode === "scratch" ? "Team pinfall · scratch" : "Team pinfall · with handicap";
+  document.getElementById("sc-total").textContent = sum(g).toLocaleString("en-SG");
+  document.getElementById("sc-vs").textContent = "vs " + OPP.name + " (#" + OPP.no + "): " + sum(og);
+  var max = Math.max.apply(null, g.concat(og)) * 1.04;
+  var html = g.map(function (v, i) {
+    var won = hh[i] > oh[i];
+    return '<div class="game"><span class="gn">Game ' + (i + 1) + '</span><div class="track"><div class="fill" style="width:' + (v / max * 100).toFixed(1) + '%">' + v + '</div><span class="opp" style="left:' + (og[i] / max * 100).toFixed(1) + '%" title="' + OPP.name + ' ' + og[i] + '"></span></div><span class="pt ' + (won ? "won" : "lost") + '">' + (won ? "Point won" : "Point lost") + "</span></div>";
+  }).join("");
+  var sw = sum(hh) > sum(oh);
+  html += '<div class="game" style="border-top:1px solid #1c3250;padding-top:12px"><span class="gn">Series</span><div class="track"><div class="fill" style="width:100%">' + sum(g) + '</div></div><span class="pt ' + (sw ? "won" : "lost") + '">' + (sw ? "Point won" : "Point lost") + "</span></div>";
+  document.getElementById("games").innerHTML = html;
+  document.getElementById("sc-who").innerHTML = Object.keys(WEEK.s).map(function (n) {
+    var arr = WEEK[key][n];
+    return '<button class="pl" data-p="' + esc(n) + '" style="flex-direction:column;align-items:stretch"><span style="display:flex;align-items:center;gap:12px"><span class="av">' + ini(n) + '</span><span class="t"><b>' + esc(n) + '</b><span>Hcp ' + WEEK.hcp[n] + ' · ' + WEEK.pts[n] + ' bowler points</span></span><span class="r">' + sum(arr) + '<small>Series</small></span></span><span class="cells">' + arr.map(function (v, i) { return '<span class="cell ' + cls(WEEK.s[n][i]) + '">' + v + '</span>'; }).join("") + '</span></button>';
+  }).join("");
+}
+
+/* stats */
+function renderStats() {
+  var hs = Object.keys(WEEK.s).reduce(function (a, n) { return sum(WEEK.s[n]) > a.v ? { n: n, v: sum(WEEK.s[n]) } : a; }, { n: "", v: 0 });
+  var hg = { n: "", v: 0, i: 0 };
+  Object.keys(WEEK.s).forEach(function (n) { WEEK.s[n].forEach(function (v, i) { if (v > hg.v) hg = { n: n, v: v, i: i + 1 }; }); });
+  var top = ELIG.slice().sort(function (a, b) { return b.avg - a.avg; })[0];
+  var mid = ELIG.slice().sort(function (a, b) { return Math.abs(a.avg - SQUAD_AVG) - Math.abs(b.avg - SQUAD_AVG); })[0];
+  var most = ROSTER.slice().sort(function (a, b) { return b.g - a.g; })[0];
+  function sp(k, big, name, sub) { return '<button class="sp" data-p="' + esc(name) + '"><div class="k">' + k + '</div><b>' + big + '</b><div class="n">' + esc(name) + '</div><small>' + sub + '</small></button>'; }
+  document.getElementById("spot").innerHTML =
+    sp("Highest scorer · Wk 23", hs.v, hs.n, "Series, 4 games") +
+    sp("High game · Wk 23", hg.v, hg.n, "Game " + hg.i) +
+    sp("Highest average", top.avg, top.n, top.g + " games") +
+    sp("The average bowler", mid.avg, mid.n, "Squad average " + SQUAD_AVG.toFixed(1)) ;
+  var list = ROSTER.slice().sort(function (a, b) { return sortKey === "n" ? a.n.localeCompare(b.n) : sortKey === "g" ? b.g - a.g : b.avg - a.avg; });
+  document.getElementById("squad").innerHTML = list.map(function (r) {
+    return '<button class="sq" data-p="' + esc(r.n) + '"><span class="av">' + ini(r.n) + '</span><span><b>' + esc(r.n) + '</b><small>' + r.g + ' games · Hcp ' + r.hcp + (r.g < 16 ? ' · <span class="prov">provisional</span>' : '') + '</small><div class="bar"><i style="width:' + Math.max(0, (r.avg - 140) / 80 * 100).toFixed(0) + '%"></i></div></span><span class="v">' + r.avg + '</span></button>';
+  }).join("");
+}
+
+/* bonus */
+function renderBonus() {
+  var tot = 0, rows = Object.keys(WEEK.s).map(function (n) {
+    var net = sum(WEEK.s[n].map(pay)); tot += net;
+    return '<div class="bn"><div><b>' + esc(n) + '</b><div class="cells">' + WEEK.s[n].map(function (v) { return '<span class="cell ' + cls(v) + '">' + v + '</span>'; }).join("") + '</div></div><div class="amt ' + (net < 0 ? "neg" : net > 0 ? "pos" : "zero") + '">' + money(net) + '</div></div>';
+  }).join("");
+  document.getElementById("bonus").innerHTML = rows + '<div class="bn" style="border-top:1px solid #27425f"><b>Team net</b><div class="amt ' + (tot < 0 ? "neg" : tot > 0 ? "pos" : "zero") + '">' + money(tot) + '</div></div>';
+}
+
+/* sheet */
+function openSheet(n) {
+  var r = find(n); if (!r) return;
+  var rank = RANKED.indexOf(r) + 1, diff = r.avg - SQUAD_AVG, ws = WEEK.s[n];
+  var h = '<div class="sh"><span class="av">' + ini(n) + '</span><div><h3 class="disp" id="sh-name">' + esc(n) + '</h3><div class="sub">Golden Pin' + (n === "Jamal" ? ' · Captain' : '') + '</div></div><button class="x" id="x" aria-label="Close">×</button></div>' +
+    '<div class="kv"><div><b>' + r.avg + '</b><span>League avg</span></div><div><b>' + r.g + '</b><span>Games</span></div><div><b>' + r.tpf.toLocaleString("en-SG") + '</b><span>Total pins</span></div><div><b>#' + rank + '</b><span>Squad rank</span></div><div><b>' + (diff >= 0 ? "+" : "−") + Math.abs(diff).toFixed(1) + '</b><span>vs squad avg</span></div><div><b>' + r.hcp + '</b><span>Handicap</span></div></div>';
+  if (ws) {
+    var series = sum(ws), net = sum(ws.map(pay));
+    h += '<div class="cap">Week 23 · 28 Oct</div><div class="cols">' + ws.map(function (v, i) { return '<div><b>' + v + '</b><i class="' + cls(v) + '" style="height:' + ((v - 100) / 150 * 100).toFixed(0) + '%"></i><span>G' + (i + 1) + '</span></div>'; }).join("") + '</div>' +
+      '<div class="when">Series <b>' + series + '</b> · average <b>' + (series / 4).toFixed(1) + '</b> · ' + WEEK.pts[n] + ' bowler points · bonus <b class="' + (net < 0 ? "neg" : net > 0 ? "pos" : "zero") + '">' + money(net) + '</b></div>';
+  } else {
+    h += '<div class="when">Did not bowl in Week 23.' + (r.g < 16 ? ' Provisional average: fewer than 16 games.' : '') + '</div>';
+  }
+  var sheet = document.getElementById("sheet"); sheet.innerHTML = h;
+  document.getElementById("sheetwrap").hidden = false;
+  document.getElementById("x").focus();
+}
+function closeSheet() { document.getElementById("sheetwrap").hidden = true; }
+
+/* routing */
+var VIEWS = ["hub","fixtures","scores","stats","bonus"];
+function route() {
+  var v = (location.hash || "#hub").slice(1); if (VIEWS.indexOf(v) < 0) v = "hub";
+  VIEWS.forEach(function (k) {
+    document.getElementById("view-" + k).hidden = k !== v;
+    var t = document.getElementById("tab-" + k); if (k === v) t.setAttribute("aria-current", "page"); else t.removeAttribute("aria-current");
+  });
+  window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+document.addEventListener("click", function (e) {
+  var p = e.target.closest("[data-p]"); if (p) { openSheet(p.getAttribute("data-p")); return; }
+  var f = e.target.closest(".fx"); if (f) { var d = f.querySelector(".det"); d.hidden = !d.hidden; return; }
+  if (e.target.id === "sheetwrap" || e.target.closest("#x")) closeSheet();
+  var m = e.target.closest("#mode button"); if (m) { mode = m.getAttribute("data-mode"); document.querySelectorAll("#mode button").forEach(function (b) { b.setAttribute("aria-pressed", b === m ? "true" : "false"); }); renderScores(); }
+  var s = e.target.closest("#sortseg button"); if (s) { sortKey = s.getAttribute("data-sort"); document.querySelectorAll("#sortseg button").forEach(function (b) { b.setAttribute("aria-pressed", b === s ? "true" : "false"); }); renderStats(); }
+});
+document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeSheet(); });
+
+renderHub(); renderFix(); renderScores(); renderStats(); renderBonus(); route(); tick(); setInterval(tick, 1000);
+</script>

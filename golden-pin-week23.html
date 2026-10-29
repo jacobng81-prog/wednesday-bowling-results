@@ -1,0 +1,249 @@
+<title>Golden Pin Week 23</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one lane per week. Scoreboard hero, game-by-game bars, bowler table, season standing cards. Golden Pin data only. */
+:root {
+  --bg: #eef1f4;
+  --surface: #ffffff;
+  --ink: #13202b;
+  --muted: #5b6b78;
+  --line: #d5dce2;
+  --pin: #c9302c;
+  --pin-soft: #f9dcda;
+  --lane: #b9791f;
+  --lane-soft: #f6e6c6;
+  --strike: #1f7a4d;
+  --strike-soft: #d3eedf;
+  --bar: #13202b;
+  --font-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e151c; --surface: #16202a; --ink: #e8edf1; --muted: #93a4b1; --line: #2a3945;
+    --pin: #ff6b64; --pin-soft: #4a2220; --lane: #f0b45a; --lane-soft: #4a3716;
+    --strike: #5fd49a; --strike-soft: #17402d; --bar: #e8edf1; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e151c; --surface: #16202a; --ink: #e8edf1; --muted: #93a4b1; --line: #2a3945;
+  --pin: #ff6b64; --pin-soft: #4a2220; --lane: #f0b45a; --lane-soft: #4a3716;
+  --strike: #5fd49a; --strike-soft: #17402d; --bar: #e8edf1; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.5;
+  padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+.eyebrow { font-family: var(--font-display); font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); font-size: 14px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(44px, 10vw, 68px); line-height: .95; margin: 4px 0 6px; text-wrap: balance; }
+h1 span { color: var(--pin); }
+.sub { color: var(--muted); font-size: 14px; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: .06em; text-transform: uppercase; margin: 0 0 12px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chips .cap { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; margin-right: 4px; }
+.chip { font: 600 14px var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 8px 16px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.chip:focus-visible { outline: 2px solid var(--pin); outline-offset: 2px; }
+.hero { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 24px; align-items: end; }
+.hero .big { font-family: var(--font-display); font-weight: 700; font-size: clamp(76px, 22vw, 136px); line-height: .85; font-variant-numeric: tabular-nums; }
+.hero .label { color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+.vs { margin-top: 10px; font-size: 14px; color: var(--muted); }
+.vs b { color: var(--ink); font-family: var(--font-num); font-weight: 500; }
+.stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 16px; }
+.stat b { display: block; font-family: var(--font-num); font-size: 22px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.stat span { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+@media (max-width: 560px) { .hero { grid-template-columns: minmax(0, 1fr); } }
+section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0; }
+.games { display: flex; flex-direction: column; gap: 12px; }
+.game { display: grid; grid-template-columns: 70px minmax(0, 1fr) 96px; gap: 12px; align-items: center; }
+.game .gname { font-family: var(--font-display); font-weight: 600; font-size: 17px; letter-spacing: .06em; text-transform: uppercase; }
+.game .track { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.game .track i { display: block; height: 16px; background: var(--bar); border-radius: 2px; }
+.game .track em { font: 500 14px var(--font-num); font-style: normal; font-variant-numeric: tabular-nums; }
+.pt { font-size: 12px; font-weight: 600; text-align: center; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.pt.won { background: var(--strike-soft); color: var(--strike); }
+.pt.lost { background: var(--pin-soft); color: var(--pin); }
+.game.series { border-top: 1px solid var(--line); padding-top: 12px; }
+.note { color: var(--muted); font-size: 12px; margin-top: 12px; }
+.tablewrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 640px; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 600; }
+td.name { font-weight: 600; }
+td.num { font-family: var(--font-num); font-size: 14px; }
+td.g span { display: inline-block; min-width: 42px; padding: 2px 6px; border-radius: 4px; text-align: center; }
+tfoot td { font-weight: 600; border-bottom: 0; }
+.low { background: var(--pin-soft); color: var(--pin); font-weight: 600; }
+.high { background: var(--lane-soft); color: var(--lane); font-weight: 600; }
+.top { background: var(--strike-soft); color: var(--strike); font-weight: 600; }
+.neg { color: var(--pin); } .pos { color: var(--strike); }
+.keys { display: flex; flex-wrap: wrap; gap: 8px 16px; color: var(--muted); font-size: 12px; margin-top: 12px; }
+.keys span { display: inline-flex; align-items: center; gap: 6px; }
+.keys b { display: inline-block; width: 14px; height: 14px; border-radius: 3px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; }
+.card .ttl { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+.card .pos-big { font-family: var(--font-display); font-weight: 700; font-size: 44px; line-height: 1; margin: 4px 0; }
+.card .pos-big small { font-size: 18px; color: var(--muted); font-weight: 600; }
+.card dl { margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 13px; }
+.card dt { color: var(--muted); } .card dd { margin: 0; font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.hl { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.hl div { border-left: 3px solid var(--lane); padding: 2px 0 2px 12px; }
+.hl b { display: block; font-family: var(--font-display); font-size: 36px; line-height: 1; font-variant-numeric: tabular-nums; }
+.hl span { display: block; font-size: 13px; color: var(--muted); }
+footer { color: var(--muted); font-size: 12px; }
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">11th Superbowl Wednesday Trios League · Week 23</div>
+    <h1>Golden <span>Pin</span></h1>
+    <div class="sub">Team 13 · Captain Jamal · Lane 13 · Superbowl Tampines · 28 Oct 2026</div>
+  </header>
+
+  <div class="chips" role="group" aria-label="Scoring basis" id="mode">
+    <span class="cap">Show</span>
+    <button class="chip" data-mode="scratch" aria-pressed="true" id="chip-scratch">Scratch</button>
+    <button class="chip" data-mode="hcp" aria-pressed="false" id="chip-hcp">With handicap</button>
+  </div>
+
+  <div class="hero">
+    <div>
+      <div class="label" id="heroLabel">Team pinfall, scratch</div>
+      <div class="big" id="heroTotal">0</div>
+      <div class="vs" id="heroVs"></div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <section class="panel">
+    <h2>Game by game</h2>
+    <div class="games" id="games"></div>
+    <div class="note">Match points are decided on handicap scores: one point per game and one for the 4-game series, plus bowler points.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Bowlers</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Name</th><th>Hcp</th><th>G1</th><th>G2</th><th>G3</th><th>G4</th><th>Series</th><th>Avg</th><th>League avg</th><th>Pts</th><th>+/−</th></tr></thead>
+        <tbody id="tbody"></tbody>
+        <tfoot id="tfoot"></tfoot>
+      </table>
+    </div>
+    <div class="keys">
+      <span><b class="low"></b>Under 170 (−$2)</span>
+      <span><b class="high"></b>Over 210 (+$2)</span>
+      <span><b class="top"></b>Over 230 (+$4)</span>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Season standing</h2>
+    <div class="cards" id="cards"></div>
+    <div class="note">Standing pinfall in the league sheet includes handicap.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Highlights</h2>
+    <div class="hl" id="hl"></div>
+  </section>
+
+  <footer>Source: 11th SB Wednesday Trios League, Week 23 results, 28 Oct 2026. Golden Pin data only. Reward and penalty bands are the team's own rule.</footer>
+</main>
+
+<script>
+var BOWLERS = [
+  { name: "Anthony Tan", hcp: 1, s: [170,165,149,181], h: [171,166,150,182], pts: 4, lg: 176 },
+  { name: "Aide",        hcp: 0, s: [166,216,183,158], h: [166,216,183,158], pts: 2, lg: 183 },
+  { name: "Othman",      hcp: 0, s: [171,192,201,231], h: [171,192,201,231], pts: 3, lg: 197 }
+];
+var OPP = { name: "Pin Warriors", no: 12, s: [497,570,484,563], h: [516,589,503,582], pts: 10.0 };
+var STAND = [
+  { ttl: "Overall", pos: 15, won: 167.0, prev: 157.0, pin: 52079, asOf: "Week 23" },
+  { ttl: "Round 2", pos: 15, won: 45.5,  prev: 35.5,  pin: 13531, asOf: "Week 23" },
+  { ttl: "Round 1 final", pos: 15, won: 121.5, prev: 114.5, pin: 38646, asOf: "Week 17" }
+];
+var mode = "scratch";
+function sum(a) { return a.reduce(function (x, y) { return x + y; }, 0); }
+function col(i, key) { return sum(BOWLERS.map(function (b) { return b[key][i]; })); }
+function pay(g) { return g < 170 ? -2 : g > 230 ? 4 : g > 210 ? 2 : 0; }
+function cls(g) { return g < 170 ? "low" : g > 230 ? "top" : g > 210 ? "high" : ""; }
+function money(n) { return (n < 0 ? "−" : n > 0 ? "+" : "") + "$" + Math.abs(n); }
+function ord(n) { var s = ["th","st","nd","rd"], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
+
+function render() {
+  var key = mode === "scratch" ? "s" : "h", okey = key;
+  var games = [0,1,2,3].map(function (i) { return col(i, key); });
+  var hgames = [0,1,2,3].map(function (i) { return col(i, "h"); });
+  var total = sum(games), oppTotal = sum(OPP[okey]), hTotal = sum(hgames), oppH = sum(OPP.h);
+  var all = [];
+  BOWLERS.forEach(function (b) { b.s.forEach(function (g, i) { all.push({ g: g, n: b.name, i: i + 1 }); }); });
+  var hiG = all.reduce(function (a, b) { return b.g > a.g ? b : a; });
+  var hiS = BOWLERS.reduce(function (a, b) { return sum(b.s) > sum(a.s) ? b : a; });
+  var gamePts = hgames.map(function (g, i) { return g > OPP.h[i]; });
+  var seriesWon = hTotal > oppH;
+  var teamPts = gamePts.filter(Boolean).length + (seriesWon ? 1 : 0);
+  var bowlerPts = sum(BOWLERS.map(function (b) { return b.pts; }));
+  var matchPts = bowlerPts + teamPts;
+
+  document.getElementById("heroLabel").textContent = mode === "scratch" ? "Team pinfall, scratch" : "Team pinfall, with handicap";
+  document.getElementById("heroTotal").textContent = total.toLocaleString("en-SG");
+  document.getElementById("heroVs").innerHTML = "vs " + OPP.name + " (#" + OPP.no + ") <b>" + oppTotal + "</b>";
+  var res = matchPts === OPP.pts ? "Draw" : matchPts > OPP.pts ? "Win" : "Loss";
+  document.getElementById("stats").innerHTML =
+    '<div class="stat"><b>' + matchPts.toFixed(1) + " – " + OPP.pts.toFixed(1) + '</b><span>Match points · ' + res + '</span></div>' +
+    '<div class="stat"><b>' + (total / 4).toFixed(1) + '</b><span>Team game avg</span></div>' +
+    '<div class="stat"><b>' + hiG.g + '</b><span>High game · ' + hiG.n + '</span></div>' +
+    '<div class="stat"><b>' + sum(hiS.s) + '</b><span>High series · ' + hiS.name + '</span></div>';
+
+  var max = Math.max.apply(null, games);
+  var rows = games.map(function (g, i) {
+    return '<div class="game"><div class="gname">Game ' + (i + 1) + '</div><div class="track"><i style="width:' + (g / max * 78).toFixed(1) + '%"></i><em>' + g + '</em></div><div class="pt ' + (gamePts[i] ? "won" : "lost") + '">' + (gamePts[i] ? "Point won" : "Point lost") + "</div></div>";
+  }).join("");
+  rows += '<div class="game series"><div class="gname">Series</div><div class="track"><em>' + total + '</em></div><div class="pt ' + (seriesWon ? "won" : "lost") + '">' + (seriesWon ? "Point won" : "Point lost") + "</div></div>";
+  document.getElementById("games").innerHTML = rows;
+
+  document.getElementById("tbody").innerHTML = BOWLERS.map(function (b) {
+    var sr = sum(b[key]), net = sum(b.s.map(pay));
+    return '<tr><td class="name">' + b.name + '</td><td class="num">' + b.hcp + "</td>" +
+      b[key].map(function (g, i) { return '<td class="g num"><span class="' + cls(b.s[i]) + '">' + g + "</span></td>"; }).join("") +
+      '<td class="num"><b>' + sr + '</b></td><td class="num">' + (sr / 4).toFixed(1) + '</td><td class="num">' + b.lg + '</td><td class="num">' + b.pts + '</td><td class="num ' + (net < 0 ? "neg" : net > 0 ? "pos" : "") + '">' + money(net) + "</td></tr>";
+  }).join("");
+  var netAll = sum(BOWLERS.map(function (b) { return sum(b.s.map(pay)); }));
+  document.getElementById("tfoot").innerHTML = '<tr><td>Team</td><td></td>' +
+    games.map(function (g) { return '<td class="num">' + g + "</td>"; }).join("") +
+    '<td class="num">' + total + '</td><td class="num">' + (total / 12).toFixed(1) + '</td><td></td><td class="num">' + bowlerPts + '</td><td class="num ' + (netAll < 0 ? "neg" : "pos") + '">' + money(netAll) + "</td></tr>";
+
+  document.getElementById("cards").innerHTML = STAND.map(function (s) {
+    return '<div class="card"><div class="ttl">' + s.ttl + '</div><div class="pos-big">' + ord(s.pos) + ' <small>of 18</small></div><dl>' +
+      '<dt>Points won</dt><dd>' + s.won.toFixed(1) + '</dd>' +
+      '<dt>Week gain</dt><dd>' + (s.ttl === "Round 1 final" ? "n/a" : "+" + (s.won - s.prev).toFixed(1)) + '</dd>' +
+      '<dt>Pinfall</dt><dd>' + s.pin.toLocaleString("en-SG") + '</dd>' +
+      '<dt>As of</dt><dd>' + s.asOf + "</dd></dl></div>";
+  }).join("");
+
+  var bestGame = Math.max.apply(null, col(0,"s") === 0 ? [0] : [0,1,2,3].map(function (i) { return col(i, "s"); }));
+  var bestIdx = [0,1,2,3].map(function (i) { return col(i, "s"); }).indexOf(bestGame) + 1;
+  var over210 = all.filter(function (a) { return a.g > 210; }).length;
+  document.getElementById("hl").innerHTML =
+    '<div><b>' + hiG.g + '</b><span>High game: ' + hiG.n + ', game ' + hiG.i + '</span></div>' +
+    '<div><b>' + sum(hiS.s) + '</b><span>High series: ' + hiS.name + '</span></div>' +
+    '<div><b>' + bestGame + '</b><span>Best team game: game ' + bestIdx + '</span></div>' +
+    '<div><b>' + over210 + '</b><span>Games over 210 this week</span></div>';
+}
+document.getElementById("mode").addEventListener("click", function (e) {
+  var b = e.target.closest("button"); if (!b) return;
+  mode = b.getAttribute("data-mode");
+  document.querySelectorAll(".chip").forEach(function (c) { c.setAttribute("aria-pressed", c === b ? "true" : "false"); });
+  render();
+});
+render();
+</script>
